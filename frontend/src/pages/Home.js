@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import BidForm from '../components/BidForm';
 
 function Home() {
+  const { user } = useContext(AuthContext);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const handleBidSuccess = (updatedItem) => {
+    setItems(prevItems => prevItems.map(item => 
+      item._id === updatedItem._id ? updatedItem : item
+    ));
+    setError(null);
+  };
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -67,12 +77,32 @@ function Home() {
             <p className="text-gray-600 mb-4">{item.description}</p>
             <div className="flex justify-between items-center">
               <span className="font-bold">${item.currentBid}</span>
+            {user && user.isAdmin && (
+                <button 
+                  onClick={async () => {
+                    if (window.confirm('Delete this item?')) {
+                      await api.delete(`/items/${item._id}`);
+                      setItems(items.filter(i => i._id !== item._id));
+                    }
+                  }}
+                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                >
+                  Delete
+                </button>
+              )}
+            <div className="flex flex-col gap-2">
               <Link 
                 to={`/item/${item._id}`}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 text-center"
               >
                 View Details
               </Link>
+              <BidForm 
+                itemId={item._id}
+                currentBid={item.currentBid}
+                onBidSuccess={handleBidSuccess}
+              />
+            </div>
             </div>
           </div>
         </div>
@@ -82,3 +112,5 @@ function Home() {
 }
 
 export default Home;
+
+

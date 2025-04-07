@@ -21,6 +21,9 @@ function SellerDashboard() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+    
     try {
       await api.createItem(formData);
       setSuccess('Item created successfully!');
@@ -30,10 +33,18 @@ function SellerDashboard() {
         startingBid: '',
         image: ''
       });
-      setError('');
     } catch (err) {
       console.error('Error creating item:', err);
-      setError('Failed to create item. Please try again.');
+      if (err.errors) {
+        // Handle field-specific errors
+        const errorMessages = Object.entries(err.errors)
+          .filter(([_, value]) => value)
+          .map(([field, message]) => `${field}: ${message}`)
+          .join('\n');
+        setError(errorMessages || 'Validation failed');
+      } else {
+        setError(err.message || 'Failed to create item. Please try again.');
+      }
     }
   };
 

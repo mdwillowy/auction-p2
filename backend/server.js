@@ -12,9 +12,10 @@ connectDB();
 
 // CORS Configuration
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5001'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 };
 
 // Middleware
@@ -27,7 +28,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api/items', itemRoutes);
+app.use('/api', itemRoutes);
 app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 5001;
